@@ -1,36 +1,44 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+
+const connectDB = require('./src/config/database');
+const routes = require('./src/routes');
+const errorMiddleware = require('./src/middleware/error.middleware');
+const { startQueueManager } = require('./src/queue/queue.manager');
+const logger = require('./src/utils/logger');
 
 const app = express();
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Database
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mysteryboxes')
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+});
+app.use(limiter);
 
 // Routes
-app.use('/api/v1/auth', require('./src/routes/auth.routes'));
-app.use('/api/v1/boxes', require('./src/routes/box.routes'));
-app.use('/api/v1/wallet', require('./src/routes/wallet.routes'));
-app.use('/api/v1/orders', require('./src/routes/order.routes'));
-app.use('/api/v1/referrals', require('./src/routes/referral.routes'));
-app.use('/api/v1/admin', require('./src/routes/admin.routes'));
+app.use('/api/v1', routes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
-});
+// Error handling
+app.use(errorMiddleware);
+
+// Database connection
+connectDB();
+
+// Start queue manager
+startQueueManager();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

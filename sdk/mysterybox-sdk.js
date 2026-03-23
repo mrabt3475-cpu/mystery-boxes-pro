@@ -1,6 +1,5 @@
 /**
  * Mystery Boxes Pro SDK
- * JavaScript SDK for integrating with Mystery Boxes API
  */
 class MysteryBoxSDK {
   constructor(apiKey, baseUrl = 'https://api.mysteryboxes.pro') {
