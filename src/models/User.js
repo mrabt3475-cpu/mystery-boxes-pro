@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema({
   referralTier: {
     type: Number,
     default: 1,
+    min: 1,
     max: 5,
   },
   level: {
@@ -80,7 +81,6 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: {
-    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.__v;

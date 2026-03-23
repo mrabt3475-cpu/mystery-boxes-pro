@@ -24,7 +24,7 @@ const boxItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  minPity: {
+  minQuantity: {
     type: Number,
     default: 0,
   },
@@ -114,8 +114,6 @@ const boxSchema = new mongoose.Schema({
   },
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
 });
 
 // Virtual for profit margin
