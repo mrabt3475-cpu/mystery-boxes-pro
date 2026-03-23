@@ -1,11 +1,21 @@
+/**
+ * Order Routes
+ */
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/order.controller');
-const { auth } = require('../middleware/auth.middleware');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-router.get('/', auth, orderController.getOrders);
-router.get('/:id', auth, orderController.getOrder);
-router.post('/', auth, orderController.createOrder);
-router.post('/:id/refund', auth, orderController.refundOrder);
+// All routes require authentication
+router.use(verifyToken);
+
+// Get orders
+router.get('/', orderController.getOrders);
+
+// Get single order
+router.get('/:id', orderController.getOrder);
+
+// Get order stats
+router.get('/stats/summary', orderController.getOrderStats);
 
 module.exports = router;

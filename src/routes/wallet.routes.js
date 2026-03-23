@@ -1,12 +1,30 @@
+/**
+ * Wallet Routes
+ */
 const express = require('express');
 const router = express.Router();
 const walletController = require('../controllers/wallet.controller');
-const { auth } = require('../middleware/auth.middleware');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-router.get('/balance', auth, walletController.getBalance);
-router.post('/deposit', auth, walletController.deposit);
-router.post('/withdraw', auth, walletController.withdraw);
-router.get('/transactions', auth, walletController.getTransactions);
-router.post('/transfer', auth, walletController.transfer);
+// All routes require authentication
+router.use(verifyToken);
+
+// Get balance
+router.get('/balance', walletController.getBalance);
+
+// Get transactions
+router.get('/transactions', walletController.getTransactions);
+
+// Deposit
+router.post('/deposit', walletController.deposit);
+
+// Withdraw
+router.post('/withdraw', walletController.withdraw);
+
+// Set PIN
+router.post('/pin', walletController.setPin);
+
+// Verify PIN
+router.post('/pin/verify', walletController.verifyPin);
 
 module.exports = router;

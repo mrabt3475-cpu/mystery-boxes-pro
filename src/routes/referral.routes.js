@@ -1,11 +1,25 @@
+/**
+ * Referral Routes
+ */
 const express = require('express');
 const router = express.Router();
 const referralController = require('../controllers/referral.controller');
-const { auth } = require('../middleware/auth.middleware');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-router.get('/stats', auth, referralController.getStats);
-router.get('/link', auth, referralController.getLink);
-router.get('/rewards', auth, referralController.getRewards);
-router.post('/claim', auth, referralController.claimReward);
+// All routes require authentication
+router.use(verifyToken);
+
+// Get stats
+router.get('/stats', referralController.getStats);
+
+
+// Get referral link
+router.get('/link', referralController.getLink);
+
+// Get rewards
+router.get('/rewards', referralController.getRewards);
+
+// Claim reward
+router.post('/claim', referralController.claimReward);
 
 module.exports = router;
