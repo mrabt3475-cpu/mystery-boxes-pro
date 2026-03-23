@@ -10,7 +10,7 @@ const { verifyToken, requireAdmin } = require('../middleware/auth.middleware');
 router.get('/', boxController.getBoxes);
 router.get('/:id', boxController.getBox);
 
-// Protected routes
+// Protected routes (admin)
 router.post('/', verifyToken, requireAdmin, boxController.createBox);
 router.put('/:id', verifyToken, requireAdmin, boxController.updateBox);
 router.delete('/:id', verifyToken, requireAdmin, boxController.deleteBox);

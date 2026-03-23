@@ -71,6 +71,22 @@ class BoxController {
   }
 
   /**
+   * Delete box (admin only)
+   */
+  async deleteBox(req, res) {
+    try {
+      const box = await Box.findByIdAndDelete(req.params.id);
+      if (!box) {
+        return res.status(404).json({ success: false, error: 'Box not found' });
+      }
+      res.json({ success: true, message: 'Box deleted' });
+    } catch (error) {
+      logger.error('Error deleting box:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete box' });
+    }
+  }
+
+  /**
    * Open a box - main game logic
    */
   async openBox(req, res) {
