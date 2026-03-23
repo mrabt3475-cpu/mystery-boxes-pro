@@ -1,0 +1,42 @@
+const express = require('express');
+const router = express.Router();
+
+const authRoutes = require('./auth.routes');
+const boxRoutes = require('./box.routes');
+const walletRoutes = require('./wallet.routes');
+const orderRoutes = require('./order.routes');
+const referralRoutes = require('./referral.routes');
+const adminRoutes = require('./admin.routes');
+const itemRoutes = require('./item.routes');
+const inventoryRoutes = require('./inventory.routes');
+const notificationRoutes = require('./notification.routes');
+const couponRoutes = require('./coupon.routes');
+const giftRoutes = require('./gift.routes');
+const eventRoutes = require('./event.routes');
+const missionRoutes = require('./mission.routes');
+const levelsRoutes = require('./levels.routes');
+const fairnessRoutes = require('./fairness.routes');
+const developerRoutes = require('./developer.routes');
+const complianceRoutes = require('./compliance.routes');
+const activityRoutes = require('./activity.routes');
+
+router.use('/auth', authRoutes);
+router.use('/boxes', boxRoutes);
+router.use('/wallet', walletRoutes);
+router.use('/orders', orderRoutes);
+router.use('/referral', referralRoutes);
+router.use('/admin', adminRoutes);
+router.use('/items', itemRoutes);
+router.use('/inventory', inventoryRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/coupons', couponRoutes);
+router.use('/gifts', giftRoutes);
+router.use('/events', eventRoutes);
+router.use('/missions', missionRoutes);
+router.use('/levels', levelsRoutes);
+router.use('/fairness', fairnessRoutes);
+router.use('/developer', developerRoutes);
+router.use('/compliance', complianceRoutes);
+router.use('/activity', activityRoutes);
+
+module.exports = router;

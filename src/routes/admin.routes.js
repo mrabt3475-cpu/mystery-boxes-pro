@@ -1,14 +1,12 @@
-/**
- * Admin Routes
- */
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
-const auth = require('../middleware/auth');
-const admin = require('../middleware/admin');
+const { auth, adminAuth } = require('../middleware/auth.middleware');
 
-router.get('/dashboard', auth, admin, adminController.dashboard);
-router.get('/users', auth, admin, adminController.getUsers);
-router.post('/boxes', auth, admin, adminController.createBox);
+router.get('/stats', auth, adminAuth, adminController.getStats);
+router.get('/users', auth, adminAuth, adminController.getUsers);
+router.post('/boxes', auth, adminAuth, adminController.createBox);
+router.put('/boxes/:id', auth, adminAuth, adminController.updateBox);
+router.delete('/boxes/:id', auth, adminAuth, adminController.deleteBox);
 
 module.exports = router;
