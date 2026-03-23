@@ -1,18 +1,7 @@
-/**
- * Provably Fair - Cryptographic fairness verification
- */
-const crypto = require('crypto');
+const ProvablyFair = require('../security/provably.fair');
 
-class ProvablyFair {
-  static generateServerSeed() {
-    return crypto.randomBytes(32).toString('hex');
-  }
+const provablyFairRoutes = (req, res) => {
+  res.json({ message: 'Provably Fair endpoint' });
+};
 
-  static calculateResult(serverSeed, clientSeed, nonce) {
-    const hash = crypto.createHash('sha256');
-    hash.update(serverSeed + clientSeed + nonce);
-    return hash.digest('hex');
-  }
-}
-
-module.exports = ProvablyFair;
+module.exports = provablyFairRoutes;
