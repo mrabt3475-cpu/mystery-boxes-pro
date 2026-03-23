@@ -34,6 +34,14 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Account is disabled' 
+      });
+    }
+
     req.user = user;
     req.token = token;
     next();

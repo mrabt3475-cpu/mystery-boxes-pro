@@ -20,6 +20,10 @@ const logger = {
       console.log(`[DEBUG] ${timestamp} - ${message}`, data || '');
     }
   },
+  http: (message, data) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[HTTP] ${timestamp} - ${message}`, data || '');
+  },
 };
 
 module.exports = logger;
