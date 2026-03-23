@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+// Import all route modules
 const authRoutes = require('./auth.routes');
 const boxRoutes = require('./box.routes');
 const walletRoutes = require('./wallet.routes');
@@ -20,6 +21,7 @@ const developerRoutes = require('./developer.routes');
 const complianceRoutes = require('./compliance.routes');
 const activityRoutes = require('./activity.routes');
 
+// Mount routes
 router.use('/auth', authRoutes);
 router.use('/boxes', boxRoutes);
 router.use('/wallet', walletRoutes);
