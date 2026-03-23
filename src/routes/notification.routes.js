@@ -1,10 +1,24 @@
+/**
+ * Notification Routes
+ */
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notification.controller');
-const { auth } = require('../middleware/auth.middleware');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-router.get('/', auth, notificationController.getNotifications);
-router.put('/:id/read', auth, notificationController.markAsRead);
-router.delete('/:id', auth, notificationController.deleteNotification);
+// All routes require authentication
+router.use(verifyToken);
+
+// Get notifications
+router.get('/', notificationController.getNotifications);
+
+// Mark as read
+router.put('/:id/read', notificationController.markAsRead);
+
+// Mark all as read
+router.put('/read-all', notificationController.markAllAsRead);
+
+// Delete notification
+router.delete('/:id', notificationController.deleteNotification);
 
 module.exports = router;
