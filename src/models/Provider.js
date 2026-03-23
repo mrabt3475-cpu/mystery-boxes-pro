@@ -2,12 +2,11 @@ const mongoose = require('mongoose');
 
 const providerSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  type: { type: String, enum: ['kingdomlikes', 'g2a', 'cj'], required: true },
+  type: { type: String, enum: ['kingdomlikes', 'g2a', 'cj'] },
   apiKey: String,
-  apiSecret: String,
-  isActive: { type: Boolean, default: true },
-  fee: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now }
+  markup: { type: Number, default: 0.15 },
+  active: { type: Boolean, default: true },
+  priority: { type: Number, default: 1 }
 });
 
 module.exports = mongoose.model('Provider', providerSchema);

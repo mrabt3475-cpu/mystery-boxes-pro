@@ -4,13 +4,12 @@ const boxSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
   price: { type: Number, required: true },
+  items: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }],
   image: String,
-  items: [{
-    itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
-    weight: { type: Number, default: 1 }
-  }],
-  provider: { type: String, enum: ['kingdomlikes', 'g2a', 'cj'], default: 'kingdomlikes' },
-  isActive: { type: Boolean, default: true },
+  category: String,
+  active: { type: Boolean, default: true },
+  minPayout: Number,
+  maxPayout: Number,
   createdAt: { type: Date, default: Date.now }
 });
 

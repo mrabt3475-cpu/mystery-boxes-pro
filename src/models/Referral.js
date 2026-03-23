@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
 const referralSchema = new mongoose.Schema({
-  referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  referred: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  reward: { type: Number, default: 0 },
-  status: { type: String, enum: ['pending', 'completed'], default: 'pending' },
+  referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  refereeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
   createdAt: { type: Date, default: Date.now }
 });
 

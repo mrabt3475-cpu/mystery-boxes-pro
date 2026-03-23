@@ -5,12 +5,11 @@ const itemSchema = new mongoose.Schema({
   description: String,
   image: String,
   value: { type: Number, required: true },
-  provider: { type: String },
-  providerItemId: String,
-  category: { type: String, enum: ['digital', 'game_key', 'physical'], default: 'digital' },
+  category: String,
+  provider: String,
+  sku: String,
   stock: { type: Number, default: 0 },
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  active: { type: Boolean, default: true }
 });
 
 module.exports = mongoose.model('Item', itemSchema);
