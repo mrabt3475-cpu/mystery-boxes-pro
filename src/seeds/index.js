@@ -1,12 +1,9 @@
-/**
- * Seeds - Initial data for the database
- */
 const seedCatalog = require('./catalog.seed');
 
-async function seed() {
-  console.log('Seeding database...');
+const runSeeds = async () => {
+  console.log('Running seeds...');
   await seedCatalog();
-  console.log('Seeding complete!');
-}
+  console.log('Seeds completed');
+};
 
-module.exports = seed;
+module.exports = runSeeds;
