@@ -1,17 +1,17 @@
 /**
- * activity.service.js
- * Shows recent activity in the platform.
+ * Activity Service - User activity tracking
  */
 const Activity = require('../models/Activity');
+const logger = require('../utils/logger');
 
 class ActivityService {
-  static async log(userId, type, data) {
-    return Activity.create({ userId, type, data });
+  async log(userId, action, details = {}) {
+    return Activity.create({ userId, action, details });
   }
 
-  static async getRecent(limit = 20) {
-    return Activity.find().sort({ createdAt: -1 }).limit(limit);
+  async getUserActivity(userId, limit = 50) {
+    return Activity.find({ userId }).sort({ createdAt: -1 }).limit(limit);
   }
 }
 
-module.exports = ActivityService;
+module.exports = new ActivityService();
