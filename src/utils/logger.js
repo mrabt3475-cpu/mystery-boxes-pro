@@ -1,7 +1,25 @@
+/**
+ * Logger Utility
+ */
 const logger = {
-  info: (msg, data) => console.log(`[INFO] ${new Date().toISOString()} - ${msg}`, data || ''),
-  error: (msg, data) => console.error(`[ERROR] ${new Date().toISOString()} - ${msg}`, data || ''),
-  warn: (msg, data) => console.warn(`[WARN] ${new Date().toISOString()} - ${msg}`, data || '')
+  info: (message, data) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[INFO] ${timestamp} - ${message}`, data || '');
+  },
+  error: (message, error) => {
+    const timestamp = new Date().toISOString();
+    console.error(`[ERROR] ${timestamp} - ${message}`, error?.stack || error || '');
+  },
+  warn: (message, data) => {
+    const timestamp = new Date().toISOString();
+    console.warn(`[WARN] ${timestamp} - ${message}`, data || '');
+  },
+  debug: (message, data) => {
+    if (process.env.NODE_ENV === 'development') {
+      const timestamp = new Date().toISOString();
+      console.log(`[DEBUG] ${timestamp} - ${message}`, data || '');
+    }
+  },
 };
 
 module.exports = logger;

@@ -1,13 +1,21 @@
+/**
+ * Box Routes
+ */
 const express = require('express');
 const router = express.Router();
 const boxController = require('../controllers/box.controller');
-const { auth } = require('../middleware/auth.middleware');
+const { verifyToken, requireAdmin } = require('../middleware/auth.middleware');
 
+// Public routes
 router.get('/', boxController.getBoxes);
 router.get('/:id', boxController.getBox);
-router.post('/', auth, boxController.createBox);
-router.post('/:id/open', auth, boxController.openBox);
-router.put('/:id', auth, boxController.updateBox);
-router.delete('/:id', auth, boxController.deleteBox);
+
+// Protected routes
+router.post('/', verifyToken, requireAdmin, boxController.createBox);
+router.put('/:id', verifyToken, requireAdmin, boxController.updateBox);
+router.delete('/:id', verifyToken, requireAdmin, boxController.deleteBox);
+
+// Open box - requires auth but not admin
+router.post('/open', verifyToken, boxController.openBox);
 
 module.exports = router;
