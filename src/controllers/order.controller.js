@@ -1,16 +1,17 @@
 const Order = require('../models/Order');
 
-class OrderController {
-  static async getOrders(req, res) {
-    const orders = await Order.find({ userId: req.user.id }).sort({ createdAt: -1 });
+const orderController = {
+  async getOrders(req, res) {
+    const orders = await Order.find({ user: req.user.id }).populate('box item');
     res.json(orders);
-  }
-
-  static async getOrder(req, res) {
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.id });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
+  },
+  async getOrder(req, res) {
+    const order = await Order.findById(req.params.id).populate('box item');
+    res.json(order);
+  },
+  async createOrder(req, res) {
+    const order = await Order.create({ ...req.body, user: req.user.id });
     res.json(order);
   }
-}
-
-module.exports = OrderController;
+};
+module.exports = orderController;

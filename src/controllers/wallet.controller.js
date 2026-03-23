@@ -1,45 +1,24 @@
-const Wallet = require('../models/Wallet');
+const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 
-class WalletController {
-  static async getBalance(req, res) {
-    const wallet = await Wallet.findOne({ userId: req.user.id });
-    res.json({ balance: wallet?.balance || 0 });
+const walletController = {
+  async getBalance(req, res) {
+    const user = await User.findById(req.user.id);
+    res.json({ balance: user.wallet });
+  },
+  async deposit(req, res) {
+    const user = await User.findById(req.user.id);
+    user.wallet += req.body.amount;
+    await user.save();
+    await Transaction.create({ user: user._id, type: 'deposit', amount: req.body.amount, balance: user.wallet });
+    res.json({ balance: user.wallet });
+  },
+  async withdraw(req, res) {
+    const user = await User.findById(req.user.id);
+    if (user.wallet < req.body.amount) return res.status(400).json({ error: 'Insufficient balance' });
+    user.wallet -= req.body.amount;
+    await user.save();
+    res.json({ balance: user.wallet });
   }
-
-  static async depositCrypto(req, res) {
-    const { amount, txHash } = req.body;
-    const wallet = await Wallet.findOne({ userId: req.user.id });
-    wallet.balance += amount;
-    wallet.totalDeposited += amount;
-    await wallet.save();
-    
-    await Transaction.create({
-      userId: req.user.id,
-      type: 'deposit',
-      amount,
-      method: 'crypto',
-      txHash,
-      status: 'completed'
-    });
-    
-    res.json({ success: true, balance: wallet.balance });
-  }
-
-  static async withdraw(req, res) {
-    const { amount } = req.body;
-    const wallet = await Wallet.findOne({ userId: req.user.id });
-    
-    if (wallet.balance < amount) {
-      return res.status(400).json({ error: 'Insufficient balance' });
-    }
-    
-    wallet.balance -= amount;
-    wallet.totalWithdrawn += amount;
-    await wallet.save();
-    
-    res.json({ success: true, balance: wallet.balance });
-  }
-}
-
-module.exports = WalletController;
+};
+module.exports = walletController;
