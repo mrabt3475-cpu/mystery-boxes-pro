@@ -1,5 +1,5 @@
 /**
- * Error Middleware
+ * Error Middleware - Global error handler
  */
 const logger = require('../utils/logger');
 
@@ -11,10 +11,11 @@ const errorMiddleware = (err, req, res, next) => {
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
+    userAgent: req.get('user-agent'),
   });
 
   // Default error
-  let statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal server error';
 
   // Mongoose validation error
@@ -43,7 +44,14 @@ const errorMiddleware = (err, req, res, next) => {
   // Duplicate key error
   if (err.code === 11000) {
     statusCode = 400;
-    message = 'Duplicate entry';
+    const field = Object.keys(err.keyValue)[0];
+    message = `${field} already exists`;
+  }
+
+  // Custom error classes
+  if (err.name === 'AppError') {
+    statusCode = err.statusCode;
+    message = err.message;
   }
 
   res.status(statusCode).json({
@@ -53,4 +61,40 @@ const errorMiddleware = (err, req, res, next) => {
   });
 };
 
-module.exports = errorMiddleware;
+/**
+ * Not found handler
+ */
+const notFoundMiddleware = (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Endpoint not found',
+  });
+};
+
+/**
+ * Async handler wrapper
+ */
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+/**
+ * Custom error class
+ */
+class AppError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.isOperational = true;
+
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+module.exports = {
+  errorMiddleware,
+  notFoundMiddleware,
+  asyncHandler,
+  AppError,
+};
