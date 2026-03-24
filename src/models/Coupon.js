@@ -1,67 +1,23 @@
-/**
- * Coupon Model
- */
 const mongoose = require('mongoose');
 
 const couponSchema = new mongoose.Schema({
-  code: {
-    type: String,
-    required: true,
-    unique: true,
-    uppercase: true,
-    trim: true,
-  },
-  discount: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  type: {
-    type: String,
-    enum: ['percent', 'fixed'],
-    default: 'percent',
-  },
-  minAmount: {
-    type: Number,
-    default: 0,
-  },
-  maxUses: {
-    type: Number,
-    default: 1,
-  },
-  usedCount: {
-    type: Number,
-    default: 0,
-  },
-  expiresAt: Date,
-  startsAt: Date,
-  usedBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  }],
-  active: {
-    type: Boolean,
-    default: true,
-  },
-}, {
-  timestamps: true,
-});
+  code: { type: String, unique: true, required: true, uppercase: true },
+  type: { type: String, enum: ['percentage', 'fixed', 'special'], required: true },
+  value: { type: Number, required: true },
+  minOrderAmount: { type: Number, default: 0 },
+  maxDiscount: { type: Number },
+  maxUses: { type: Number },
+  usedCount: { type: Number, default: 0 },
+  validFrom: { type: Date },
+  validUntil: { type: Date },
+  isActive: { type: Boolean, default: true },
+  applicableBoxes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Box' }],
+  applicableCategories: [{ type: String }],
+  excludedBoxes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Box' }],
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: true });
 
-// Check if coupon is valid
-couponSchema.methods.isValid = function() {
-  if (!this.active) return false;
-  if (this.expiresAt && this.expiresAt < new Date()) return false;
-  if (this.startsAt && this.startsAt > new Date()) return false;
-  if (this.usedCount >= this.maxUses) return false;
-  return true;
-};
-
-// Calculate discount
-couponSchema.methods.calculateDiscount = function(amount) {
-  if (this.type === 'percent') {
-    return amount * (this.discount / 100);
-  }
-  return Math.min(this.discount, amount);
-};
+couponSchema.index({ code: 1 });
+couponSchema.index({ isActive: 1, validFrom: 1, validUntil: 1 });
 
 module.exports = mongoose.model('Coupon', couponSchema);
