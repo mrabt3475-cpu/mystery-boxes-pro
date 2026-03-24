@@ -1,126 +1,102 @@
-/**
- * Referral Service
- */
 const Referral = require('../models/Referral');
-const ReferralReward = require('../models/ReferralReward');
 const User = require('../models/User');
 const Wallet = require('../models/Wallet');
-const Activity = require('../models/Activity');
+const Transaction = require('../models/Transaction');
 const logger = require('../utils/logger');
 
 class ReferralService {
-  /**
-   * Create referral relationship
-   */
-  async createReferral(referrerId, refereeId) {
-    // Check if already referred
-    const existing = await Referral.findOne({ refereeId });
-    if (existing) {
-      logger.warn(`User ${refereeId} already has a referrer`);
-      return null;
-    }
+  constructor() {
+    this.tierRequirements = {
+      1: { minReferrals: 0, minVolume: 0 },
+      2: { minReferrals: 5, minVolume: 500 },
+      3: { minReferrals: 15, minVolume: 2000 },
+      4: { minReferrals: 30, minVolume: 5000 },
+      5: { minReferrals: 50, minVolume: 10000 }
+    };
+  }
 
+  async createReferral(referrerId, referredId) {
+    const existing = await Referral.findOne({ referrer: referrerId, referred: referredId });
+    if (existing) throw new Error('Referral already exists');
+    
     const referral = await Referral.create({
       referrer: referrerId,
-      referee: refereeId,
+      referred: referredId,
       status: 'active',
+      bonusAwarded: false
     });
-
-    // Update referrer's tier
-    await this.updateReferrerTier(referrerId);
-
-    logger.info(`Referral created: ${referrerId} -> ${refereeId}`);
+    
+    await User.findByIdAndUpdate(referrerId, { $inc: { 'stats.totalReferrals': 1 } });
+    logger.info(`Referral created: ${referrerId} -> ${referredId}`);
     return referral;
   }
 
-  /**
-   * Calculate commission for referrer
-   */
-  async calculateCommission(referrerId, orderAmount) {
-    const user = await User.findById(referrerId);
-    const tier = user?.referralTier || 1;
+  async awardReferralBonus(referrerId, orderAmount) {
+    const referral = await Referral.findOne({ referrer: referrerId, bonusAwarded: false });
+    if (!referral) return null;
     
-    const rates = {
-      1: 0.05,  // 5%
-      2: 0.10,  // 10%
-      3: 0.15,  // 15%
-      4: 0.20,  // 20%
-      5: 0.25,  // 25%
-    };
+    const bonusRate = this.getBonusRate(orderAmount);
+    const bonusAmount = orderAmount * bonusRate;
     
-    return orderAmount * (rates[tier] || 0.05);
-  }
-
-  /**
-   * Award referral reward
-   */
-  async awardReward(referrerId, amount, type = 'commission') {
-    try {
-      // Create reward record
-      await ReferralReward.create({
+    referral.bonusAmount = bonusAmount;
+    referral.bonusAwarded = true;
+    referral.bonusAwardedAt = new Date();
+    await referral.save();
+    
+    const wallet = await Wallet.findOne({ user: referrerId });
+    if (wallet) {
+      wallet.balance += bonusAmount;
+      wallet.totalEarned += bonusAmount;
+      await wallet.save();
+      await Transaction.create({
         user: referrerId,
-        amount,
-        type,
+        type: 'referral_bonus',
+        amount: bonusAmount,
+        balance: wallet.balance,
+        status: 'completed',
+        note: 'Referral bonus'
       });
-
-      // Add to wallet
-      const wallet = await Wallet.findOne({ user: referrerId });
-      if (wallet) {
-        wallet.balance += amount;
-        await wallet.save();
-      }
-
-      // Log activity
-      await Activity.create({
-        user: referrerId,
-        action: 'referral',
-        details: { amount, type },
-      });
-
-      logger.info(`Awarded ${amount} to referrer ${referrerId}`);
-    } catch (error) {
-      logger.error('Award reward error:', error);
     }
-  }
-
-  /**
-   * Update referrer's tier based on number of referrals
-   */
-  async updateReferrerTier(referrerId) {
-    const count = await Referral.countDocuments({ referrer: referrerId, status: 'active' });
     
-    let tier = 1;
-    if (count >= 50) tier = 5;
-    else if (count >= 20) tier = 4;
-    else if (count >= 10) tier = 3;
-    else if (count >= 5) tier = 2;
-
-    await User.findByIdAndUpdate(referrerId, { referralTier: tier });
+    logger.info(`Referral bonus awarded: ${bonusAmount} to ${referrerId}`);
+    return referral;
   }
 
-  /**
-   * Get referral stats
-   */
+  getBonusRate(orderAmount) {
+    if (orderAmount >= 1000) return 0.10;
+    if (orderAmount >= 500) return 0.07;
+    if (orderAmount >= 200) return 0.05;
+    return 0.03;
+  }
+
+  async checkAndUpgradeTier(userId) {
+    const user = await User.findById(userId);
+    const stats = await this.getReferralStats(userId);
+    const currentTier = user.referralTier || 1;
+    
+    for (let tier = 5; tier >= currentTier; tier--) {
+      const req = this.tierRequirements[tier];
+      if (stats.totalReferrals >= req.minReferrals && stats.totalVolume >= req.minVolume) {
+        if (tier > currentTier) {
+          await User.findByIdAndUpdate(userId, { referralTier: tier });
+          logger.info(`User ${userId} upgraded to tier ${tier}`);
+          return tier;
+        }
+      }
+    }
+    return currentTier;
+  }
+
   async getReferralStats(userId) {
-    const referrals = await Referral.find({ referrer: userId, status: 'active' })
-      .populate('referee', 'username createdAt');
-
-
-    const rewards = await ReferralReward.aggregate([
-      { $match: { user: userId } },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: '$amount' },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
+    const referrals = await Referral.find({ referrer: userId });
+    const referredUsers = await User.find({ _id: { $in: referrals.map(r => r.referred) } });
+    const totalVolume = referredUsers.reduce((sum, u) => sum + (u.stats?.totalSpent || 0), 0);
+    
     return {
-      referralCount: referrals.length,
-      totalRewards: rewards[0]?.totalAmount || 0,
-      referrals,
+      totalReferrals: referrals.length,
+      activeReferrals: referrals.filter(r => r.status === 'active').length,
+      totalVolume,
+      tier: (await User.findById(userId))?.referralTier || 1
     };
   }
 }
