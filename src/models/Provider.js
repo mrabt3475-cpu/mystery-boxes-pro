@@ -1,25 +1,22 @@
 const mongoose = require('mongoose');
 
 const providerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  type: { type: String, enum: ['game', 'casino', 'lottery', 'sports'], required: true },
-  code: { type: String, unique: true, required: true },
+  name: { type: String, required: true, unique: true },
+  type: { type: String, enum: ['physical', 'digital', 'crypto', 'mixed'], default: 'digital' },
   apiEndpoint: { type: String },
   apiKey: { type: String },
-  apiSecret: { type: String },
-  webhookUrl: { type: String },
+  webhookSecret: { type: String },
   isActive: { type: Boolean, default: true },
-  isTestMode: { type: Boolean, default: false },
-  commission: { type: Number, default: 0 },
-  minBet: { type: Number, default: 0 },
-  maxBet: { type: Number, default: 0 },
+  config: { type: mongoose.Schema.Types.Mixed },
   supportedCurrencies: [{ type: String }],
-  logo: { type: String },
-  description: { type: String },
-  sortOrder: { type: Number, default: 0 }
+  minDeposit: { type: Number, default: 0 },
+  maxDeposit: { type: Number },
+  fee: { type: Number, default: 0 },
+  processingTime: { type: String },
+  instructions: { type: String },
+  logo: { type: String }
 }, { timestamps: true });
 
-providerSchema.index({ code: 1 });
 providerSchema.index({ type: 1, isActive: 1 });
 
 module.exports = mongoose.model('Provider', providerSchema);
