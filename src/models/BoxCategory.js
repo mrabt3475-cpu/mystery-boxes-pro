@@ -6,14 +6,13 @@ const boxCategorySchema = new mongoose.Schema({
   description: { type: String },
   icon: { type: String },
   image: { type: String },
-  parentCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'BoxCategory' },
   isActive: { type: Boolean, default: true },
   sortOrder: { type: Number, default: 0 },
-  seoTitle: { type: String },
-  seoDescription: { type: String }
+  parentCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'BoxCategory' },
+  boxCount: { type: Number, default: 0 }
 }, { timestamps: true });
 
 boxCategorySchema.index({ slug: 1 });
-boxCategorySchema.index({ parentCategory: 1, sortOrder: 1 });
+boxCategorySchema.index({ isActive: 1, sortOrder: 1 });
 
 module.exports = mongoose.model('BoxCategory', boxCategorySchema);

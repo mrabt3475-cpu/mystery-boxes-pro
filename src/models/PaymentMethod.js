@@ -1,30 +1,26 @@
 const mongoose = require('mongoose');
 
 const paymentMethodSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  type: { type: String, enum: ['ton', 'usdt_trc20', 'usdt_erc20', 'bank', 'card'], required: true },
   name: { type: String, required: true },
+  code: { type: String, unique: true, required: true },
+  type: { type: String, enum: ['crypto', 'bank', 'wallet', 'card'], required: true },
+  currency: { type: String, required: true },
+  isActive: { type: Boolean, default: true },
   isDefault: { type: Boolean, default: false },
-  walletAddress: { type: String },
-  network: { type: String },
-  bankDetails: {
-    bankName: { type: String },
-    accountNumber: { type: String },
-    accountName: { type: String },
-    routingNumber: { type: String },
-    swiftCode: { type: String }
-  },
-  cardDetails: {
-    last4: { type: String },
-    brand: { type: String },
-    expiryMonth: { type: Number },
-    expiryYear: { type: Number }
-  },
-  isVerified: { type: Boolean, default: false },
-  verifiedAt: { type: Date }
+  minDeposit: { type: Number, default: 0 },
+  maxDeposit: { type: Number },
+  minWithdrawal: { type: Number, default: 0 },
+  maxWithdrawal: { type: Number },
+  depositFee: { type: Number, default: 0 },
+  withdrawalFee: { type: Number, default: 0 },
+  feeType: { type: String, enum: ['fixed', 'percentage'], default: 'percentage' },
+  instructions: { type: String },
+  logo: { type: String },
+  sortOrder: { type: Number, default: 0 },
+  config: { type: mongoose.Schema.Types.Mixed }
 }, { timestamps: true });
 
-paymentMethodSchema.index({ user: 1, type: 1 });
-paymentMethodSchema.index({ user: 1, isDefault: 1 });
+paymentMethodSchema.index({ code: 1 });
+paymentMethodSchema.index({ isActive: 1, sortOrder: 1 });
 
 module.exports = mongoose.model('PaymentMethod', paymentMethodSchema);
