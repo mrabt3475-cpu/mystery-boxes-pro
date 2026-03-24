@@ -1,61 +1,24 @@
-/**
- * Transaction Model
- */
 const mongoose = require('mongoose');
 
-
 const transactionSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true,
-  },
-  type: {
-    type: String,
-    enum: ['deposit', 'withdraw', 'bet', 'win', 'refund', 'bonus', 'commission', 'gift_sent', 'gift_received'],
-    required: true,
-    index: true,
-  },
-  amount: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  balance: {
-    type: Number,
-    required: true,
-  },
-  previousBalance: {
-    type: Number,
-  },
-  description: String,
-  paymentMethod: {
-    type: String,
-    enum: ['ton', 'usdt', 'card', 'wallet', 'coupon'],
-  },
-  transactionHash: String,
-  withdrawalAddress: String,
-  status: {
-    type: String,
-    enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'],
-    default: 'pending',
-    index: true,
-  },
-  metadata: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {},
-  },
-  processedAt: Date,
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
-});
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  type: { type: String, enum: ['deposit', 'withdrawal', 'purchase', 'refund', 'commission', 'bonus', 'adjustment'], required: true },
+  amount: { type: Number, required: true },
+  fee: { type: Number, default: 0 },
+  netAmount: { type: Number, required: true },
+  currency: { type: String, default: 'USD' },
+  method: { type: String },
+  status: { type: String, enum: ['pending', 'completed', 'failed', 'cancelled'], default: 'pending' },
+  reference: { type: String, index: true },
+  order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  paymentMethod: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod' },
+  metadata: { type: mongoose.Schema.Types.Mixed },
+  completedAt: { type: Date },
+  failureReason: { type: String }
+}, { timestamps: true });
 
-// Index for queries
-transactionSchema.index({ user: 1, createdAt: -1 });
-transactionSchema.index({ type: 1, status: 1 });
-transactionSchema.index({ transactionHash: 1 });
+transactionSchema.index({ user: 1, type: 1, createdAt: -1 });
+transactionSchema.index({ reference: 1 });
+transactionSchema.index({ order: 1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
