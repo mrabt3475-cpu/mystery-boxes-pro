@@ -2,23 +2,26 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  type: { type: String, enum: ['deposit', 'withdrawal', 'purchase', 'refund', 'commission', 'bonus', 'adjustment'], required: true },
+  type: { type: String, enum: ['deposit', 'withdrawal', 'bet', 'win', 'refund', 'bonus', 'commission', 'agent_commission'], required: true },
   amount: { type: Number, required: true },
-  fee: { type: Number, default: 0 },
-  netAmount: { type: Number, required: true },
+  balanceBefore: { type: Number, required: true },
+  balanceAfter: { type: Number, required: true },
   currency: { type: String, default: 'USD' },
-  method: { type: String },
   status: { type: String, enum: ['pending', 'completed', 'failed', 'cancelled'], default: 'pending' },
-  reference: { type: String, index: true },
+  paymentMethod: { type: String },
+  paymentMethodId: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod' },
   order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
-  paymentMethod: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod' },
+  box: { type: mongoose.Schema.Types.ObjectId, ref: 'Box' },
+  provider: { type: mongoose.Schema.Types.ObjectId, ref: 'Provider' },
+  referenceId: { type: String },
+  transactionHash: { type: String },
+  description: { type: String },
   metadata: { type: mongoose.Schema.Types.Mixed },
-  completedAt: { type: Date },
-  failureReason: { type: String }
+  processedAt: { type: Date }
 }, { timestamps: true });
 
 transactionSchema.index({ user: 1, type: 1, createdAt: -1 });
-transactionSchema.index({ reference: 1 });
-transactionSchema.index({ order: 1 });
+transactionSchema.index({ referenceId: 1 }, { unique: true, sparse: true });
+transactionSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
